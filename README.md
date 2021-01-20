@@ -1,3 +1,54 @@
+# 源码分析
+
+
+## 知识点
+
+### 插件体系的原理
+
+webpack 在运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在特定的阶段钩入想要添加的自定义功能。Webpack 的 Tapable 事件流机制保证了插件的有序性，使得整个系统扩展性良好。
+
+Plugin 的 API 可以去官网查阅
+
+https://www.webpackjs.com/api/plugins
+
+*   compiler 暴露了和 Webpack 整个生命周期相关的钩子
+    
+*   compilation 暴露了与模块和依赖有关的粒度更小的事件钩子
+    
+*   插件需要在其原型上绑定 apply 方法，才能访问 compiler 实例
+    
+*   传给每个插件的 compiler 和 compilation 对象都是同一个引用，若在一个插件中修改了它们身上的属性，会影响后面的插件
+    
+*   找出合适的事件点去完成想要的功能
+    
+
+*   emit 事件发生时，可以读取到最终输出的资源、代码块、模块及其依赖，并进行修改 (emit 事件是修改 Webpack 输出资源的最后时机)
+    
+*   watch-run 当依赖的文件发生变化时会触发
+    
+
+*   异步的事件需要在插件处理完任务时调用回调函数通知 Webpack 进入下一个流程，不然会卡住
+    
+
+关于tapable可以参考demo：[FunnyLiu/tapableDemo: tapableDemo](https://github.com/FunnyLiu/tapableDemo)，及其源码[FunnyLiu/tapable at readsource](https://github.com/FunnyLiu/tapable/tree/readsource)。
+
+整个tapable的插件模式是基于发布订阅模式来完成的，也就是说在整个生命周期中会触发不同的事件，而插件则对这些事件的进行监听，从而回调。
+
+
+
+
+参考：
+
+[design - 设计模式（以Typescript描述）](https://omnipotent-front-end.github.io/-Design-Patterns-Typescript/#/observer/index?id=_2%e3%80%81%e7%94%9f%e5%91%bd%e5%91%a8%e6%9c%9f%e7%ad%89%e8%ae%be%e8%ae%a1)
+
+
+
+
+----
+
+
+
+
 <div align="center">
   <a href="https://github.com/webpack/webpack">
     <img width="200" height="200" src="https://webpack.js.org/assets/icon-square-big.svg">
